@@ -74,6 +74,7 @@ struct Relation {
 
 struct Tree {
   Tree(size_t size): vertices(size), weight(0), edges_qty_(0) { }
+
   void add(const Edge &e) {
     vertices[e.from].push_back(Relation(e.to, e.w));
     vertices[e.to].push_back(Relation(e.from, e.w));
@@ -111,6 +112,7 @@ public:
     PathFinder finder(t, from, to);
     return finder.find_path();
   }
+
 private:
   PathFinder(const Tree &t, T from, T to): relations(t.size()), tree(&t),
                                            visited(t.size()),
