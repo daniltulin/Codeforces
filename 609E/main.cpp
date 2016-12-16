@@ -132,7 +132,7 @@ private:
   }
 
   void visit(T vertex) {
-    if (vertex == to || relations[to].to != -1)
+    if (relations[to].to >= 0)
         return;
     visited[vertex] = true;
     for (auto &relation: tree->relations_for(vertex)) {
