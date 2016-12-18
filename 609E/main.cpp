@@ -108,12 +108,6 @@ struct Tree {
 
 class PathFinder {
 public:
-  static vector<Relation> findPath(const Tree &t, T from, T to) {
-    PathFinder finder(t, from, to);
-    return finder.find_path();
-  }
-
-private:
   PathFinder(const Tree &t, T from, T to): relations(t.size()), tree(&t),
                                            visited(t.size()),
                                            from(from), to(to) {
@@ -131,7 +125,9 @@ private:
     return path;
   }
 
-  void visit(T vertex) {
+private:
+
+    void visit(T vertex) {
     if (relations[to].to >= 0)
         return;
     visited[vertex] = true;
@@ -196,7 +192,7 @@ private:
   DisjointSets sets;
 
   vector<Relation> find_path(T from, T to) {
-    return PathFinder::findPath(tree, from, to);
+    return PathFinder(tree, from, to).find_path();
   }
 
   bool is_valid_to_add(const Edge &e) {
