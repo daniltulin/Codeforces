@@ -109,13 +109,12 @@ struct Tree {
 class PathFinder {
 public:
   PathFinder(const Tree &t, T from, T to): relations(t.size()), tree(&t),
-                                           visited(t.size()),
                                            from(from), to(to) {
 
   }
 
   vector<Relation> find_path() {
-    visit(from);
+    width_search();
     vector<Relation> path;
     T vertex = to;
     while(vertex != from) {
@@ -127,27 +126,36 @@ public:
 
 private:
 
-    void visit(T vertex) {
-    if (relations[to].to >= 0)
+  void width_search() {
+    q.push(from);
+    while (q.size()) {
+      T vertex = q.front();
+      if (vertex == to)
         return;
-    visited[vertex] = true;
+      q.pop();
+      traverse(vertex);
+    }
+  }
+
+  void traverse(T vertex) {
     for (auto &relation: tree->relations_for(vertex)) {
       T neighbor = relation.to;
       if (is_not_visited(neighbor)) {
-        visit(neighbor);
         relations[neighbor] = Relation(vertex, relation.w);
+        q.push(neighbor);
+        if (neighbor == to) return;
       }
     }
   }
 
   bool is_not_visited(T vertex) const {
-    return !visited[vertex];
+    return relations[vertex].to < 0;
   }
 
   T from, to;
 
   const Tree *tree;
-  vector<bool> visited;
+  queue<int> q;
   vector<Relation> relations;
 };
 
