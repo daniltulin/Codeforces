@@ -225,7 +225,7 @@ void solve(istream &is, ostream &os) {
 
   solver.build_spanning_tree_on(edges);
   for (auto &edge: edges)
-    printf("%lld\n", solver.weight_of_spanning_tree_with_fixed(edge));
+    cout << solver.weight_of_spanning_tree_with_fixed(edge) << endl;
 }
 
 int main() {
