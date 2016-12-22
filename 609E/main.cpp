@@ -31,7 +31,7 @@ ostream &operator <<(ostream &os, const Edge &edge) {
 }
 
 struct DisjointSets {
-  DisjointSets(size_t size): parents(size) {
+  DisjointSets(size_t size): parents(size), rank(size, 0) {
     for (int i = 0; i < size; ++i)
       parents[i] = i;
   }
@@ -49,13 +49,20 @@ struct DisjointSets {
   void union_sets(int x, int y) {
     int a = find_set(x);
     int b = find_set(y);
-    if (a != b) {
+    if (a == b)
+      return;
+
+    if (rank[a] < rank[b])
+      parents[a] = b;
+    else {
       parents[b] = a;
-      parents[y] = a;
+      if (rank[a] == rank[b])
+        rank[a]++;
     }
   }
 
   vector<T> parents;
+  vector<T> rank;
 };
 
 struct Relation {
