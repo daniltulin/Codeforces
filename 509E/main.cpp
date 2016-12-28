@@ -9,20 +9,26 @@ typedef int T;
 
 vector<vector<T>> g;
 vector<vector<T>> up;
+vector<T> qtys;
 vector<T> tin, tout;
 int timer;
 int k, n;
 
-void dfs(int v = 0, int p = 0) {
+void dfs(T v = 0, T p = 0) {
+  T qty = 0;
   tin[v] = ++timer;
   up[v][0] = p;
   for (int i = 1; i <= k; ++i)
     up[v][i] = up[up[v][i - 1]][i - 1];
   for (int i = 0; i < g[v].size(); ++i) {
     int to = g[v][i];
-    if (p != to) dfs(to, v);
+    if (p != to) {
+      dfs(to, v);
+      qty += qtys[to];
+    }
   }
   tout[v] = ++timer;
+  qtys[v] = qty + 1;
 }
 
 bool upper (int a, int b) {
@@ -63,6 +69,7 @@ int main() {
   up.resize(n);
   tin.resize(n);
   tout.resize(n);
+  qtys.resize(n);
   timer = 0;
 
   for (auto &it: up)
@@ -80,30 +87,38 @@ int main() {
 
   int m = 0;
   cin >> m;
-  size_t qty;
   bool is_even;
+  T ancestor;
 
   vector<pair<T, T>> queries(m);
 
   for (auto &query: queries)
     cin >> query.first >> query.second;
-
+  T qty = 0;
   for (auto &query: queries) {
     u = query.first;
     v = query.second;
     u -= 1;
     v -= 1;
 
-    T ancestor = lca(u, v);
+    ancestor = lca(u, v);
     is_even = ((distance(ancestor, u) + distance(ancestor, v)) % 2 == 0);
 
+    cout << "ancestor " << ancestor + 1 << endl;
     cout << "distance ancestor u " << distance(ancestor, u) << endl;
     cout << "distance ancestor v " << distance(ancestor, v) << endl;
 
     if (ancestor == u || ancestor == v)
       cout << is_even;
     else if (is_even) {
-      cout << distance(0, ancestor) + 1;
+      qty = distance(0, ancestor) + 1;
+      for (auto &vertex: g[ancestor])
+        if (!(upper(vertex, ancestor) || upper(vertex, u)
+              || upper(vertex, v))) {
+          cout << "subtree " << vertex << " depth :" << qtys[vertex] << endl;
+          qty += qtys[vertex];
+        }
+      cout << qty;
     }
     else cout << 0;
     cout << endl;
