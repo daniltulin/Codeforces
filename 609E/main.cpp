@@ -10,21 +10,11 @@ using namespace std;
 typedef int T;
 typedef long long int W;
 
-template <typename T>
-ostream &operator <<(ostream &os, const vector<T> &v) {
-  os << "[";
-  for (auto it = v.begin(); it < v.end() - 1; ++it)
-    os << it - v.begin() << ": " << *it << ", ";
-  if (!v.empty())
-    os << v.size() - 1 << ": " << *(v.end() - 1);
-  os << "]";
-  return os;
-}
-
 struct Edge {
-  Edge(): from(0), to(0), w(0) { }
+  Edge(): from(0), to(0), w(0), in_tree(false) { }
   T from, to;
   W w;
+  bool in_tree;
 
   bool operator<(const Edge &rhs) const {
     return w > rhs.w;
@@ -37,11 +27,6 @@ istream &operator >>(istream &is, Edge &edge) {
   edge.to = to - 1;
   edge.from = from - 1;
   return is;
-}
-
-ostream &operator <<(ostream &os, const Edge &edge) {
-  os << "("<< edge.from << ", " << edge.to << ") " << edge.w;
-  return os;
 }
 
 struct DisjointSets {
@@ -87,11 +72,6 @@ struct Relation {
   W w;
 };
 
-ostream &operator <<(ostream &os, const Relation &r) {
-  os << "(" << r.to << ", " << r.w << ")";
-  return os;
-}
-
 struct Tree {
   Tree(size_t size): vertices(size), weight(0), edges_qty_(0) { }
 
@@ -126,27 +106,22 @@ struct Tree {
   vector<vector<Relation>> vertices;
 };
 
-ostream &operator <<(ostream &os, const Tree &t) {
-  os << t.vertices;
-  return os;
-}
-
 class SpanningTreeBuilder {
  public:
 
   SpanningTreeBuilder(Tree &tree): tree_(&tree), sets_(tree.size()) {}
 
-  void build_tree_on(const vector<Edge> &edges) {
+  void build_tree_on(vector<Edge> &edges) {
     auto comp = [](const Edge *a, const Edge *b) {
         return *a < *b;
     };
-    priority_queue<const Edge *, vector<const Edge *>,
+    priority_queue<Edge *, vector<Edge *>,
                    decltype(comp)> queue(comp);
     for (auto &edge: edges)
       queue.push(&edge);
 
     while(tree_->edges_qty() < tree_->size() - 1) {
-      auto edge = *queue.top();
+      Edge &edge = *queue.top();
       queue.pop();
       if (is_valid_to_add(edge))
         add_to_tree(edge);
@@ -161,8 +136,9 @@ class SpanningTreeBuilder {
     return sets_.not_from_one_set(e.to, e.from);
   }
 
-  void add_to_tree(const Edge &edge) {
+  void add_to_tree(Edge &edge) {
     tree_->add(edge);
+    edge.in_tree = true;
     sets_.union_sets(edge.to, edge.from);
   }
 
@@ -257,15 +233,13 @@ class Solver {
 public:
   Solver(T vertices_qty): tree_(vertices_qty), observer_(tree_) { }
 
-  void analyze(const vector<Edge> &edges) {
+  void analyze(vector<Edge> &edges) {
     SpanningTreeBuilder(tree_).build_tree_on(edges);
-    //cout << tree_ << endl;
     observer_.traverse();
   }
 
   W weight_of_spanning_tree_with_fixed(const Edge &edge) const {
-    //cout << edge << endl;
-    if (tree_.has(edge))
+    if (edge.in_tree)
       return tree_.weight;
 
     T from = edge.from;
@@ -280,7 +254,6 @@ public:
     } else
     weight = max(observer_.max_weight(ancestor, from),
                  observer_.max_weight(ancestor, to));
-    //cout << "max weight : " << weight << endl;
     return tree_.weight - weight + edge.w;
   }
 
@@ -302,7 +275,7 @@ void solve(istream &is, ostream &os) {
 
   solver.analyze(edges);
   for (auto &edge: edges)
-    os << solver.weight_of_spanning_tree_with_fixed(edge) << endl;
+    os << solver.weight_of_spanning_tree_with_fixed(edge) << '\n';
 }
 
 int main() {
