@@ -127,31 +127,26 @@ int main() {
       cout << 0 << '\n';
       continue;
     }
-    T median;
+    T median, pre_median;
     T qty = 1;
     if (ancestor == u || ancestor == v) {
       u = (ancestor == u) ? v : u;
-      median = th_ancestor(u, d / 2);
-      for (auto neighbour: g[median]) {
-        if (!upper(neighbour, u))
-          qty += qtys[neighbour];
-      }
-      cout << qty << '\n';
+      pre_median = th_ancestor(u, d / 2 - 1);
+      median = up[pre_median][0];
+      cout << qtys[median] - qtys[pre_median] << '\n';
     } else {
-      median = th_ancestor((d1 > d2) ? u : v, d / 2);
+      T tmp = u;
+      u = (d1 > d2) ? u : v;
+      v = (d1 > d2) ? v : tmp;
+      pre_median = th_ancestor(u, d / 2 - 1);
+      median = up[pre_median][0];
       if (ancestor == median) {
         qty = n;
-        for (auto neighbour: g[ancestor])
-          if ((upper(neighbour, u) || upper(neighbour, v)) &&
-              !upper(neighbour, ancestor))
-            qty -= qtys[neighbour];
+        qty -= qtys[pre_median];
+        qty -= qtys[th_ancestor(v, d / 2 - 1)];
         cout << qty << '\n';
       } else {
-        for (auto neighbour: g[median]) {
-          if (!upper(neighbour, u) && !upper(neighbour, v)) {
-            qty += qtys[neighbour];
-          }
-        }
+        qty = qtys[median] - qtys[pre_median];
         cout << qty << '\n';
       }
     }
