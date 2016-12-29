@@ -46,6 +46,17 @@ T lca(T u, T v) {
   return up[u][0];
 }
 
+T th_ancestor(T u, T d) {
+  for (int i = k; i >= 0 && d > 0; --i) {
+    if (pow(2, i) <= d) {
+      d -= pow(2, i);
+      u = up[u][i];
+      assert(d >= 0);
+    }
+  }
+  return u;
+}
+
 int distance(T v, T u) {
   if (u == v) return 0;
   assert(upper(v, u));
@@ -102,27 +113,37 @@ int main() {
     v -= 1;
 
     ancestor = lca(u, v);
-    is_even = ((distance(ancestor, u) + distance(ancestor, v)) % 2 == 0);
 
     cout << "ancestor " << ancestor + 1 << endl;
-    cout << "distance ancestor u " << distance(ancestor, u) << endl;
-    cout << "distance ancestor v " << distance(ancestor, v) << endl;
 
-    if (ancestor == u || ancestor == v)
-      cout << is_even;
-    else if (is_even) {
-      qty = distance(0, ancestor) + 1;
-      for (auto &vertex: g[ancestor])
-        if (!(upper(vertex, ancestor) || upper(vertex, u)
-              || upper(vertex, v))) {
-          cout << "subtree " << vertex << " depth :" << qtys[vertex] << endl;
-          qty += qtys[vertex];
+    if (ancestor == u || ancestor == v) {
+      u = upper(u, v) ? v : u;
+      T d = distance(ancestor, u);
+      if (d % 2 != 0) {
+        cout << 0 << '\n';
+        continue;
+      }
+//      cout << "distance : " << d << endl;
+      T median = th_ancestor(u, d/2);
+//      cout << "u : " << u + 1 << endl;
+//      cout << "median : " << median + 1 << endl;
+      T qty = 1;
+      for (auto neighbour: g[median]) {
+        if (!upper(neighbour, u))
+          qty += qtys[neighbour];
+      }
+      cout << qty << '\n';
+    } else {
+      T qty = n;
+      for (auto neighbour: g[ancestor]) {
+        if ((upper(neighbour, u) || upper(neighbour, v))
+            && !upper(neighbour, ancestor)) {
+          cout << "cutting of subtree : " << neighbour + 1 << endl;
+          qty -= qtys[neighbour];
         }
-      cout << qty;
+      }
+      cout << qty << '\n';
     }
-    else cout << 0;
-    cout << endl;
   }
-
   return 0;
 }
