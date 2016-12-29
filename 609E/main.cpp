@@ -89,7 +89,7 @@ struct Tree {
     edges_qty_++;
   }
 
-  size_t edges_qty() const {
+  inline size_t edges_qty() const {
     return edges_qty_;
   }
 
@@ -104,7 +104,7 @@ struct Tree {
     return vertices[vertex];
   }
 
-  size_t size() const {
+  inline size_t size() const {
     return vertices.size();
   }
 
@@ -113,66 +113,12 @@ struct Tree {
   vector<vector<Relation>> vertices;
 };
 
-class PathFinder {
-public:
-  PathFinder(const Tree &t, T from, T to): relations(t.size()), tree(&t),
-                                           from(from), to(to) {
+class SpanningTreeBuilder {
+ public:
 
-  }
+  SpanningTreeBuilder(Tree &tree): tree_(&tree), sets_(tree.size()) {}
 
-  vector<Relation> find_path() {
-    width_search();
-    vector<Relation> path;
-    T vertex = to;
-    while(vertex != from) {
-      path.push_back(relations[vertex]);
-      vertex = path.back().to;
-    }
-    return path;
-  }
-
-private:
-
-  void width_search() {
-    q.push(from);
-    while (q.size()) {
-      T vertex = q.front();
-      if (vertex == to)
-        return;
-      q.pop();
-      traverse(vertex);
-    }
-  }
-
-  void traverse(T vertex) {
-    for (auto &relation: tree->relations_for(vertex)) {
-      T neighbor = relation.to;
-      if (is_not_visited(neighbor)) {
-        relations[neighbor] = Relation(vertex, relation.w);
-        q.push(neighbor);
-        if (neighbor == to) return;
-      }
-    }
-  }
-
-  bool is_not_visited(T vertex) const {
-    return relations[vertex].to < 0;
-  }
-
-  T from, to;
-
-  const Tree *tree;
-  queue<int> q;
-  vector<Relation> relations;
-};
-
-class Solver {
-public:
-  Solver(T vertices_qty): tree(vertices_qty), sets(vertices_qty) {
-
-  }
-
-  void build_spanning_tree_on(const vector<Edge> &edges) {
+  void build_tree_on(const vector<Edge> &edges) {
     auto comp = [](const Edge *a, const Edge *b) {
         return *a < *b;
     };
@@ -181,7 +127,7 @@ public:
     for (auto &edge: edges)
       queue.push(&edge);
 
-    while(tree.edges_qty() < tree.size() - 1) {
+    while(tree_->edges_qty() < tree_->size() - 1) {
       auto edge = *queue.top();
       queue.pop();
       if (is_valid_to_add(edge))
@@ -189,35 +135,79 @@ public:
     }
   }
 
-  W weight_of_spanning_tree_with_fixed(const Edge &edge) {
-    if (tree.has(edge))
-      return tree.weight;
+ private:
+  Tree *tree_;
+  DisjointSets sets_;
 
-    auto path = find_path(edge.from, edge.to);
-    W max_weight = 0;
-    for (auto &relation: path)
-      max_weight = max(max_weight, relation.w);
-    return tree.weight + edge.w - max_weight;
+  bool is_valid_to_add(const Edge &e) {
+    return sets_.not_from_one_set(e.to, e.from);
+  }
+
+  void add_to_tree(const Edge &edge) {
+    tree_->add(edge);
+    sets_.union_sets(edge.to, edge.from);
+  }
+
+};
+
+class TreeObserver {
+ public:
+  TreeObserver(const Tree &tree): tree_(&tree), timer = 0 {
+    while ((1<<k) <= tree.size()) k++;
+    up.resize(k + 1);
+    for (auto &it: up)
+      it.resize(k + 1);
+    edges.resize(k + 1);
+    for (auto &it: edges)
+      it.resize(k + 1);
+    in.resize(tree.size());
+    out.resize(tree.size());
+  }
+
+  void traverse() {
+    dfs(0);
+  }
+
+ private:
+
+  void dfs(T v, T p = 0) {
+    in[v] = ++timer;
+    out[v] = ++timer;
+  }
+
+  Tree *tree_;
+
+  vector<vector<T>> up;
+  vector<vector<T>> edges;
+
+  vector<T> in;
+  vector<T> out;
+
+  T k;
+  T timer;
+
+};
+
+class Solver {
+public:
+  Solver(T vertices_qty): tree_(vertices_qty), observer_(tree_) { }
+
+  void analyze(const vector<Edge> &edges) {
+    SpanningTreeBuilder(tree_).build_tree_on(edges);
+    observer_.traverse();
+  }
+
+  W weight_of_spanning_tree_with_fixed(const Edge &edge) {
+    if (tree_.has(edge))
+      return tree_.weight;
+
+    return 0;
   }
 
 private:
 
-  vector<Edge> edges;
-  Tree tree;
-  DisjointSets sets;
-
-  vector<Relation> find_path(T from, T to) {
-    return PathFinder(tree, from, to).find_path();
-  }
-
-  bool is_valid_to_add(const Edge &e) {
-    return sets.not_from_one_set(e.to, e.from);
-  }
-
-  void add_to_tree(const Edge &edge) {
-    tree.add(edge);
-    sets.union_sets(edge.to, edge.from);
-  }
+  Tree tree_;
+  TreeObserver observer_;
 
 };
 
@@ -230,7 +220,7 @@ void solve(istream &is, ostream &os) {
   for (auto &edge: edges)
     is >> edge;
 
-  solver.build_spanning_tree_on(edges);
+  solver.analyze(edges);
   for (auto &edge: edges)
     cout << solver.weight_of_spanning_tree_with_fixed(edge) << endl;
 }
