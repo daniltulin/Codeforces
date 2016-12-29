@@ -70,9 +70,9 @@ int distance(T v, T u) {
   return distance + 1;
 }
 
-int main() {
+void solve(istream &is, ostream &os) {
   timer = 0;
-  cin >> n;
+  is >> n;
   k = 1;
   while ((1 << k) <= n)  ++k;
 
@@ -88,7 +88,7 @@ int main() {
 
   int u, v;
   for (int i = 0; i < n - 1; ++i) {
-    cin >> u >> v;
+    is >> u >> v;
     u -= 1;
     v -= 1;
     g[u].push_back(v);
@@ -111,7 +111,7 @@ int main() {
     v = query.second;
 
     if (u == v) {
-      cout << n << '\n';
+      os << n << '\n';
       continue;
     }
 
@@ -124,7 +124,7 @@ int main() {
     T d2 = distance(ancestor, v);
     auto d = d1 + d2;
     if ((d1 + d2) % 2 != 0) {
-      cout << 0 << '\n';
+      os << 0 << '\n';
       continue;
     }
     T median, pre_median;
@@ -133,7 +133,7 @@ int main() {
       u = (ancestor == u) ? v : u;
       pre_median = th_ancestor(u, d / 2 - 1);
       median = up[pre_median][0];
-      cout << qtys[median] - qtys[pre_median] << '\n';
+      os << qtys[median] - qtys[pre_median] << '\n';
     } else {
       T tmp = u;
       u = (d1 > d2) ? u : v;
@@ -144,12 +144,16 @@ int main() {
         qty = n;
         qty -= qtys[pre_median];
         qty -= qtys[th_ancestor(v, d / 2 - 1)];
-        cout << qty << '\n';
+        os << qty << '\n';
       } else {
         qty = qtys[median] - qtys[pre_median];
-        cout << qty << '\n';
+        os << qty << '\n';
       }
     }
- }
+  }
+}
+
+int main() {
+  solve(cin, cout);
   return 0;
 }
