@@ -114,36 +114,39 @@ int main() {
 
     ancestor = lca(u, v);
 
-    cout << "ancestor " << ancestor + 1 << endl;
-
+    //cout << "ancestor " << ancestor + 1 << endl;
+    //cout << "u : " << u + 1 << endl << "v : " << v + 1 << endl;
+    T d1 = distance(ancestor, u);
+    T d2 = distance(ancestor, v);
+    auto d = d1 + d2;
+    //cout << "ancestor - u : " << d1 << endl << "ancestor - v : " << d2 << endl;
+    //cout << "distance between u and v : " << d1 + d2 << endl;
+    if ((d1 + d2) % 2 != 0) {
+      cout << 0 << '\n';
+      continue;
+    }
+    T median;
+    T qty = 1;
     if (ancestor == u || ancestor == v) {
-      u = upper(u, v) ? v : u;
-      T d = distance(ancestor, u);
-      if (d % 2 != 0) {
-        cout << 0 << '\n';
-        continue;
-      }
-//      cout << "distance : " << d << endl;
-      T median = th_ancestor(u, d/2);
-//      cout << "u : " << u + 1 << endl;
-//      cout << "median : " << median + 1 << endl;
-      T qty = 1;
+      u = (ancestor == u) ? v : u;
+      median = th_ancestor(u, d / 2);
       for (auto neighbour: g[median]) {
         if (!upper(neighbour, u))
           qty += qtys[neighbour];
       }
       cout << qty << '\n';
     } else {
-      T qty = n;
-      for (auto neighbour: g[ancestor]) {
-        if ((upper(neighbour, u) || upper(neighbour, v))
-            && !upper(neighbour, ancestor)) {
-          cout << "cutting of subtree : " << neighbour + 1 << endl;
-          qty -= qtys[neighbour];
+      median = th_ancestor((d1 > d2) ? u : v, d / 2);
+      //cout << "median : " << median + 1 << endl;
+      for (auto neighbour: g[median]) {
+        if (!upper(neighbour, u) && !upper(neighbour, v)) {
+          //cout << "adding subtree " << neighbour + 1 << " : ";
+          //cout << qtys[neighbour] << endl;
+          qty += qtys[neighbour];
         }
       }
       cout << qty << '\n';
     }
-  }
+ }
   return 0;
 }
