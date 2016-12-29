@@ -120,13 +120,9 @@ int main() {
 
     ancestor = lca(u, v);
 
-    //cout << "ancestor " << ancestor + 1 << endl;
-    //cout << "u : " << u + 1 << endl << "v : " << v + 1 << endl;
     T d1 = distance(ancestor, u);
     T d2 = distance(ancestor, v);
     auto d = d1 + d2;
-    //cout << "ancestor - u : " << d1 << endl << "ancestor - v : " << d2 << endl;
-    //cout << "distance between u and v : " << d1 + d2 << endl;
     if ((d1 + d2) % 2 != 0) {
       cout << 0 << '\n';
       continue;
@@ -143,7 +139,6 @@ int main() {
       cout << qty << '\n';
     } else {
       median = th_ancestor((d1 > d2) ? u : v, d / 2);
-      //cout << "median : " << median + 1 << endl;
       if (ancestor == median) {
         qty = n;
         for (auto neighbour: g[ancestor])
@@ -154,8 +149,6 @@ int main() {
       } else {
         for (auto neighbour: g[median]) {
           if (!upper(neighbour, u) && !upper(neighbour, v)) {
-            //cout << "adding subtree " << neighbour + 1 << " : ";
-            //cout << qtys[neighbour] << endl;
             qty += qtys[neighbour];
           }
         }
