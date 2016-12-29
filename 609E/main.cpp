@@ -149,7 +149,7 @@ class SpanningTreeBuilder {
 
 class TreeObserver {
  public:
-  TreeObserver(const Tree &tree): tree_(&tree), timer = 0 {
+  TreeObserver(const Tree &tree): tree_(&tree), timer(0), k(0) {
     while ((1<<k) <= tree.size()) k++;
     up.resize(k + 1);
     for (auto &it: up)
