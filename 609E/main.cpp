@@ -86,7 +86,7 @@ struct Tree {
     edges_qty_++;
   }
 
-  size_t edges_qty() const {
+  inline size_t edges_qty() const {
     return edges_qty_;
   }
 
@@ -101,7 +101,7 @@ struct Tree {
     return vertices[vertex];
   }
 
-  size_t size() const {
+  inline size_t size() const {
     return vertices.size();
   }
 
@@ -110,16 +110,12 @@ struct Tree {
   vector<vector<Relation>> vertices;
 };
 
-class Solver {
-public:
-  Solver(T vertices_qty): tree(vertices_qty), sets(vertices_qty),
-                          timer(0), in(vertices_qty), out(vertices_qty) {
-    k = log(vertices_qty) + 2;
-    up.resize(vertices_qty, vector<T>(k + 1));
-    ws.resize(vertices_qty, vector<W>(k + 1));
-  }
+class SpanningTreeBuilder {
+ public:
 
-  void build_spanning_tree_on(const vector<Edge> &edges) {
+  SpanningTreeBuilder(Tree &tree): tree_(&tree), sets_(tree.size()) {}
+
+  void build_tree_on(const vector<Edge> &edges) {
     auto comp = [](const Edge *a, const Edge *b) {
         return *a < *b;
     };
@@ -128,7 +124,7 @@ public:
     for (auto &edge: edges)
       queue.push(&edge);
 
-    while(tree.edges_qty() < tree.size() - 1) {
+    while(tree_->edges_qty() < tree_->size() - 1) {
       auto edge = *queue.top();
       queue.pop();
       if (is_valid_to_add(edge))
@@ -136,89 +132,79 @@ public:
     }
   }
 
-  W weight_of_spanning_tree_with_fixed(const Edge &edge) {
-    if (tree.has(edge))
-      return tree.weight;
+ private:
+  Tree *tree_;
+  DisjointSets sets_;
 
-    W weight = max_weight(edge.from, edge.to);
-    return tree.weight + edge.w - weight;
+  bool is_valid_to_add(const Edge &e) {
+    return sets_.not_from_one_set(e.to, e.from);
   }
 
-  void traverse_tree(T parent = 0, const Relation &relation = Relation(0, 0)) {
-    T vertex = relation.to;
-    in[vertex] = timer++;
+  void add_to_tree(const Edge &edge) {
+    tree_->add(edge);
+    sets_.union_sets(edge.to, edge.from);
+  }
 
-    up[vertex][0] = parent;
-    ws[vertex][0] = relation.w;
+};
 
-    for (int i = 1; i <= k; ++i) {
-      up[vertex][i] = up[up[vertex][i - 1]][i - 1];
-      ws[vertex][i] = max(ws[vertex][i - 1],
-                          ws[up[vertex][i - 1]][i - 1]);
-    }
+class TreeObserver {
+ public:
+  TreeObserver(const Tree &tree): tree_(&tree), timer = 0 {
+    while ((1<<k) <= tree.size()) k++;
+    up.resize(k + 1);
+    for (auto &it: up)
+      it.resize(k + 1);
+    edges.resize(k + 1);
+    for (auto &it: edges)
+      it.resize(k + 1);
+    in.resize(tree.size());
+    out.resize(tree.size());
+  }
 
-    for (auto &relation: tree.relations_for(vertex)) {
-      T neighbour = relation.to;
-      if (parent != neighbour)
-        traverse_tree(vertex, relation);
-    }
-    out[vertex] = timer++;
+  void traverse() {
+    dfs(0);
+  }
+
+ private:
+
+  void dfs(T v, T p = 0) {
+    in[v] = ++timer;
+    out[v] = ++timer;
+  }
+
+  Tree *tree_;
+
+  vector<vector<T>> up;
+  vector<vector<T>> edges;
+
+  vector<T> in;
+  vector<T> out;
+
+  T k;
+  T timer;
+
+};
+
+class Solver {
+public:
+  Solver(T vertices_qty): tree_(vertices_qty), observer_(tree_) { }
+
+  void analyze(const vector<Edge> &edges) {
+    SpanningTreeBuilder(tree_).build_tree_on(edges);
+    observer_.traverse();
+  }
+
+  W weight_of_spanning_tree_with_fixed(const Edge &edge) {
+    if (tree_.has(edge))
+      return tree_.weight;
+
+    return 0;
   }
 
 private:
 
-  T k;
-  vector<vector<T>> up;
-  vector<vector<W>> ws;
-
-  T timer;
-  vector<T> in;
-  vector<T> out;
-
-  Tree tree;
-  DisjointSets sets;
-
-  bool upper(T u, T v) const {
-    return in[u] <= in[v] && out[u] >= out[v];
-  }
-
-  T lowest_ancestor(T u, T v) const {
-    if (upper(u, v)) return u;
-    if (upper(v, u)) return v;
-    for (int i = k; i >= 0; --i)
-      if (!upper(up[u][i], v))
-        u = up.at(u).at(i);
-
-    return up.at(u).at(0);
-  }
-
-  W find_max_edge(T u, T v) const {
-    W max_weight = 0;
-    if (u == v)
-      return 0;
-    for (int i = k; i >= 0; --i)
-      if (upper(v, up.at(u).at(i))) {
-        u = up.at(u).at(i);
-        max_weight = max(max_weight, ws.at(u).at(k));
-      }
-    return max(max_weight, ws.at(u).at(0));
-  }
-
-  W max_weight(T from, T to) const {
-    if (from == to)
-      return 0;
-    T ancestor = lowest_ancestor(from, to);
-    return max(find_max_edge(from, ancestor), find_max_edge(to, ancestor));
-  }
-
-  bool is_valid_to_add(const Edge &e) {
-    return sets.not_from_one_set(e.to, e.from);
-  }
-
-  void add_to_tree(const Edge &edge) {
-    tree.add(edge);
-    sets.union_sets(edge.to, edge.from);
-  }
+  Tree tree_;
+  TreeObserver observer_;
 
 };
 
@@ -231,8 +217,7 @@ void solve(istream &is, ostream &os) {
   for (auto &edge: edges)
     is >> edge;
 
-  solver.build_spanning_tree_on(edges);
-  solver.traverse_tree();
+  solver.analyze(edges);
   for (auto &edge: edges)
     cout << solver.weight_of_spanning_tree_with_fixed(edge) << endl;
 }
