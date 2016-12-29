@@ -109,6 +109,12 @@ int main() {
   for (auto &query: queries) {
     u = query.first;
     v = query.second;
+
+    if (u == v) {
+      cout << n << '\n';
+      continue;
+    }
+
     u -= 1;
     v -= 1;
 
@@ -138,14 +144,23 @@ int main() {
     } else {
       median = th_ancestor((d1 > d2) ? u : v, d / 2);
       //cout << "median : " << median + 1 << endl;
-      for (auto neighbour: g[median]) {
-        if (!upper(neighbour, u) && !upper(neighbour, v)) {
-          //cout << "adding subtree " << neighbour + 1 << " : ";
-          //cout << qtys[neighbour] << endl;
-          qty += qtys[neighbour];
+      if (ancestor == median) {
+        qty = n;
+        for (auto neighbour: g[ancestor])
+          if ((upper(neighbour, u) || upper(neighbour, v)) &&
+              !upper(neighbour, ancestor))
+            qty -= qtys[neighbour];
+        cout << qty << '\n';
+      } else {
+        for (auto neighbour: g[median]) {
+          if (!upper(neighbour, u) && !upper(neighbour, v)) {
+            //cout << "adding subtree " << neighbour + 1 << " : ";
+            //cout << qtys[neighbour] << endl;
+            qty += qtys[neighbour];
+          }
         }
+        cout << qty << '\n';
       }
-      cout << qty << '\n';
     }
  }
   return 0;
