@@ -21,8 +21,8 @@ class Filesystem {
     vector<TestData> test_data;
     struct dirent *file;
     DIR *test_directory = opendir(".");
-    while ((file = readdir(test_directory)))
-      string filename(file->d_name);
+    while ((file = readdir(test_directory))) {
+      string filename = file->d_name;
       if (is_test(filename)) {
         fstream f(filename);
         auto input_stream = CreateStream(f, [](const string &buffer) {
@@ -34,6 +34,7 @@ class Filesystem {
         f.close();
         test_data.emplace_back(input_stream, expected_stream);
       }
+    }
     return test_data;
   }
  private:
@@ -47,7 +48,7 @@ class Filesystem {
   }
 
   bool static is_test(const string &filename) {
-    return filename.find("test") != string::npos && !opendir(filename.c_str())
+    return filename.find("test") != string::npos && !opendir(filename.c_str());
   }
 };
 
