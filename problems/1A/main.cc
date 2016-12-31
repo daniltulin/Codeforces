@@ -12,7 +12,11 @@ void solve(istream &is, ostream &os) {
   os << rows_qty * cols_qty;
 }
 
-int main() {
-  solve(cin, cout);
-  return 0;
+class Solution {
+ public:
+   static void run(istream &is, ostream &os);
+};
+
+void Solution::run(istream &is, ostream &os) {
+  solve(is, os);
 }
