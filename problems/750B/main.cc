@@ -18,13 +18,16 @@ int Solution::run(istream &is, ostream &os) {
   char d;
   for (int i = 0; i < n; ++i) {
     is >> t >> dir;
+
     d = dir[0];
     if (d == 'S') {
       if (p == 20000) {os << "NO"; return 0;}
       p += t;
+      if (p > 20000) {os << "NO"; return 0;}
     } else if (d == 'N') {
       if (p == 0) {os << "NO"; return 0;}
       p -= t;
+      if (p < 0) {os << "NO"; return 0;}
     } else {
       if (p == 0 || p == 20000) {os << "NO"; return 0;}
     }
