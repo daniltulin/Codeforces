@@ -1,1 +1,1 @@
-{"build_script": "scripts/build"}
+{"build_script": "scripts/build", "template": "problems/Template.cc"}
