@@ -31,6 +31,7 @@ int Solution::run(istream &is, ostream &os) {
   }
 
   if (p == 0) os << "YES" << endl;
+  else os << "NO" << endl;
 
   return 0;
 }
