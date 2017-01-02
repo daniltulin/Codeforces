@@ -75,7 +75,6 @@ class Solution {
   void solve(istream &is, ostream &os) {
     timer = 0;
     is >> n;
-    cout << "n is read : " << n << endl;
     k = 1;
     while ((1 << k) <= n)  ++k;
 
@@ -94,7 +93,6 @@ class Solution {
       is >> u >> v;
       u -= 1;
       v -= 1;
-      cout << "got : " << u << " " << v << endl;
       g[u].push_back(v);
       g[v].push_back(u);
     }
