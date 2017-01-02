@@ -74,6 +74,8 @@ TEST_P(ProblemTest, Contest) {
       EXPECT_EQ(output_buffer, expected_buffer);
     }
   }
+  if (expected_stream >> expected_buffer)
+    FAIL() << "The solution doesn't generate enough output";
 }
 
 INSTANTIATE_TEST_CASE_P(TestsEnumerating, ProblemTest,
