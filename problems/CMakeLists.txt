@@ -7,7 +7,7 @@ macro(add_problem name)
   add_library(${name} "${name}/main.cc")
 
   target_link_libraries(${test_target} ${name})
-  target_link_libraries(${test_target} gtest)
+  target_link_libraries(${test_target} gtest_main)
 
   add_test(NAME ${name} COMMAND ${test_target}
            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${name}/tests")
