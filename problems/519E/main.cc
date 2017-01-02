@@ -155,13 +155,14 @@ class Solution {
     }
   }
 
-  static void run(istream &is, ostream &os);
+  static int run(istream &is, ostream &os);
 
 };
 
-void Solution::run(istream &is, ostream &os) {
+int Solution::run(istream &is, ostream &os) {
   Solution s;
   s.solve(is, os);
+  return 0;
 }
 
 //int main() {

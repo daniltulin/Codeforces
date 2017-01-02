@@ -280,11 +280,12 @@ void solve(istream &is, ostream &os) {
 
 class Solution {
  public:
-  static void run(istream &is, ostream &os);
+  static int run(istream &is, ostream &os);
 };
 
-void Solution::run(istream &is, ostream &os) {
+int Solution::run(istream &is, ostream &os) {
   solve(is, os);
+  return 0;
 }
 
 //int main() {

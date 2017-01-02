@@ -8,7 +8,7 @@ using namespace std;
 
 class Solution {
  public:
-  static void run(istream &is, ostream &os);
+  static int run(istream &is, ostream &os);
 };
 
 namespace {
@@ -60,7 +60,7 @@ TEST_P(ProblemTest, Contest) {
   istream &expected_stream = *pair.second;
   stringstream output_stream;
 
-  ASSERT_NO_THROW(Solution::run(input_stream, output_stream));
+  ASSERT_EQ(Solution::run(input_stream, output_stream), 0);
 
   string output_buffer, expected_buffer;
   while (output_stream >> output_buffer) {
