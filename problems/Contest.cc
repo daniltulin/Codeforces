@@ -13,7 +13,18 @@ class Solution {
 
 namespace {
 
-typedef pair<stringstream *, stringstream *> TestData;
+struct TestData {
+  TestData(stringstream *in, stringstream *exp, string &filename)
+    : input_stream(in), expected_stream(exp), filename(filename) { }
+  stringstream *input_stream;
+  stringstream *expected_stream;
+  string filename;
+};
+
+ostream &operator<<(ostream &os, const TestData &data) {
+  os << data.filename;
+  return os;
+}
 
 class Filesystem {
  public:
@@ -32,7 +43,7 @@ class Filesystem {
           return false;
         });
         f.close();
-        test_data.emplace_back(input_stream, expected_stream);
+        test_data.emplace_back(input_stream, expected_stream, filename);
       }
     }
     return test_data;
@@ -55,9 +66,10 @@ class Filesystem {
 class ProblemTest: public ::testing::TestWithParam<TestData> { };
 
 TEST_P(ProblemTest, Contest) {
-  auto pair = GetParam();
-  istream &input_stream = *pair.first;
-  istream &expected_stream = *pair.second;
+  auto data = GetParam();
+  istream &input_stream = *data.input_stream;
+  istream &expected_stream = *data.expected_stream;
+  auto filename = data.filename;
   stringstream output_stream;
 
   ASSERT_EQ(Solution::run(input_stream, output_stream), 0);
@@ -76,6 +88,8 @@ TEST_P(ProblemTest, Contest) {
   }
   if (expected_stream >> expected_buffer)
     FAIL() << "The solution doesn't generate enough output";
+  delete &input_stream;
+  delete &expected_stream;
 }
 
 INSTANTIATE_TEST_CASE_P(TestsEnumerating, ProblemTest,
